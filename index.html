@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>分鏡討論板 (Storyboard) v260624.7</title>
+    <title>分鏡討論板 (Storyboard) v260624.8</title>
     <style>
         /* =========================================
            色彩變數定義 (深淺色)
@@ -44,9 +44,30 @@
             transition: background-color 0.3s ease, color 0.3s ease;
         }
 
-        h1 {
+        /* 標題與版本號隱藏動畫 */
+        .header-wrapper {
             text-align: center;
             margin-bottom: 30px;
+        }
+
+        h1 {
+            display: inline-block; /* 讓寬度貼合文字，滑鼠真的移到字上才觸發 */
+            margin: 0;
+            cursor: default;
+        }
+
+        .version-tag {
+            font-size: 15px;
+            font-weight: normal;
+            color: var(--placeholder-color);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            margin-left: 10px;
+            pointer-events: none;
+        }
+
+        h1:hover .version-tag {
+            opacity: 1;
         }
 
         /* 頂部控制面板 */
@@ -276,7 +297,8 @@
                 padding: 15mm; 
                 margin: 0; 
             }
-            .controls-panel, .trash-can, .add-frame-btn, h1 { 
+            /* 把 header-wrapper 也加進列印時隱藏的名單中 */
+            .controls-panel, .trash-can, .add-frame-btn, .header-wrapper { 
                 display: none !important; 
             }
             .storyboard-container { 
@@ -297,7 +319,9 @@
 </head>
 <body class="dark-mode">
 
-    <h1>🎬 分鏡討論板 v260624.7 by WDC</h1>
+    <div class="header-wrapper">
+        <h1>🎬 分鏡討論板<span class="version-tag">v260624.8 by WDC</span></h1>
+    </div>
 
     <div class="controls-panel">
         <button id="btn-theme" class="control-btn" title="切換深色/淺色模式">☀️ 淺色</button>
@@ -438,7 +462,7 @@
                 addBtn.innerHTML = '➕';
 
                 // ==========================================
-                // ★ 新增：圖片自動壓縮邏輯 (利用 Canvas)
+                // 圖片自動壓縮邏輯 (利用 Canvas)
                 // ==========================================
                 function handleFile(file, targetBox) {
                     if (file && file.type.startsWith('image/')) {
@@ -446,7 +470,6 @@
                         reader.onload = function(event) {
                             const img = new Image();
                             img.onload = function() {
-                                // 設定壓縮後的最大寬度或高度 (維持比例)
                                 const MAX_DIMENSION = 1280;
                                 let width = img.width;
                                 let height = img.height;
@@ -459,17 +482,14 @@
                                     height = MAX_DIMENSION;
                                 }
 
-                                // 創建隱藏的 Canvas 來重繪縮小後的圖片
                                 const canvas = document.createElement('canvas');
                                 canvas.width = width;
                                 canvas.height = height;
                                 const ctx = canvas.getContext('2d');
                                 ctx.drawImage(img, 0, 0, width, height);
 
-                                // 匯出成 JPEG 格式，品質設定為 0.7 (70%)
                                 const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
 
-                                // 將壓縮後的 Base64 賦予背景
                                 targetBox.style.backgroundImage = `url(${compressedDataUrl})`;
                                 targetBox.querySelector('.placeholder-text').style.display = 'none';
                             };
